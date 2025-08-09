@@ -1,0 +1,42 @@
+<%- include('partials/head', { title: title }) %>
+<section class="wrap">
+  <div class="brand">
+    <div class="logo">🦷</div>
+    <div>
+      <h1>SmileCare Dental Clinic</h1>
+      <p>ยินดีต้อนรับกลับมา ดูตารางนัดและประวัติการรักษาได้ทันที</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>เข้าสู่ระบบ</h2>
+    <p class="sub">กรุณากรอกข้อมูลเพื่อเข้าสู่ระบบ</p>
+
+    <% if (message) { %>
+      <div class="alert <%= message.type %>"><%= message.text %></div>
+    <% } %>
+
+    <form method="post" action="/login" class="grid">
+      <div>
+        <label>เลขบัตรประชาชน</label>
+        <input name="citizenId" maxlength="13" value="<%= (values && values.citizenId) || '' %>" placeholder="กรอก 13 หลัก" />
+      </div>
+
+      <div>
+        <label>รหัสผ่าน</label>
+        <div class="relative">
+          <input id="login-password" type="password" name="password" />
+          <button class="toggle" type="button" onclick="window.toggleVisibility('login-password')">👁️</button>
+        </div>
+      </div>
+
+      <div class="row between">
+        <a class="link" href="#">ลืมรหัสผ่าน?</a>
+        <a class="link" href="/register">ไปสมัครสมาชิก →</a>
+      </div>
+
+      <button class="primary" type="submit">เข้าสู่ระบบ</button>
+    </form>
+  </div>
+</section>
+<%- include('partials/foot') %>

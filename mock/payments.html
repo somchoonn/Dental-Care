@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ชำระเงิน | SmileCare</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <div class="brand">
+      <div class="logo">🦷</div>
+      <div><h1>ชำระเงิน</h1><p class="sub">แสดงรายละเอียดค่ารักษาและยอดที่ต้องจ่าย</p></div>
+    </div>
+
+    <div class="card" id="bills"></div>
+
+    <div class="card">
+      <a class="link" href="index.html">← กลับหน้าเมนู</a>
+    </div>
+  </section>
+</main>
+
+<script>
+const patients = {
+  PT001:{id:'PT001', titleName:'นาย', firstName:'สมชาย', lastName:'สุขใจ'},
+  PT002:{id:'PT002', titleName:'นางสาว', firstName:'กมลทิพย์', lastName:'ยิ้มแย้ม'},
+};
+const bills = [
+  { id:'PM001', patientId:'PT001', items:[{name:'อุดฟัน (เรซิน)', qty:1, price:1200},{name:'ค่าบริการคลินิก', qty:1, price:100}] },
+  { id:'PM002', patientId:'PT002', items:[{name:'ขูดหินปูน', qty:1, price:900},{name:'ค่าบริการคลินิก', qty:1, price:100}] },
+];
+function money(n){ return n.toLocaleString(); }
+function card(b){
+  const pt = patients[b.patientId];
+  const total = b.items.reduce((s,it)=>s+it.qty*it.price,0);
+  const rows = b.items.map(it=>`
+    <tr><td>${it.name}</td>
+        <td style="text-align:right">${it.qty}</td>
+        <td style="text-align:right">${money(it.price)}</td>
+        <td style="text-align:right">${money(it.qty*it.price)}</td></tr>`).join('');
+  return `
+    <div style="border:1px solid #eef0ff;border-radius:14px;padding:14px;margin-bottom:14px;background:#fcfcff;">
+      <div class="row between" style="margin-bottom:6px;">
+        <div><strong>${pt.titleName}${pt.firstName} ${pt.lastName}</strong> · <span style="color:#667">ID: ${pt.id}</span></div>
+        <div><strong>รวม: ${money(total)} บาท</strong></div>
+      </div>
+      <div style="overflow:auto;">
+        <table class="table" style="border-spacing:0">
+          <thead><tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th style="text-align:right">ราคา/หน่วย</th><th style="text-align:right">เป็นเงิน</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="actions" style="margin-top:10px;">
+        <a class="link" href="#">พิมพ์ใบเสร็จ</a>
+        <button class="primary" type="button" onclick="alert('ชำระเงิน (เดโม) สำเร็จ')">ชำระเงิน</button>
+      </div>
+    </div>`;
+}
+document.getElementById('bills').innerHTML = bills.map(card).join('');
+</script>
+</body>
+</html>

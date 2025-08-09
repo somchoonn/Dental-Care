@@ -1,0 +1,30 @@
+:root{
+  --ink:#1f2a44; --muted:#5b6b8a; --bg1:#f5f7ff; --bg2:#f7efff; --bg3:#e8f5ff;
+  --violet-600:#7555ff; --fuchsia-600:#cf3de8; --ring:#b9a8ff55;
+  --shadow:0 10px 35px rgba(20,22,35,.1); --radius:18px;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Inter,Arial;color:var(--ink);
+  background:radial-gradient(1200px 800px at 10% -10%, var(--bg2), transparent 60%),
+             radial-gradient(1100px 700px at 110% 10%, var(--bg3), transparent 60%),
+             linear-gradient(180deg, var(--bg1), #fff);}
+main{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px}
+.wrap{width:min(1100px,94vw);display:grid;gap:24px}
+.brand{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #ece8ff;
+  padding:16px 18px;border-radius:calc(var(--radius) - 4px);box-shadow:var(--shadow)}
+.logo{display:grid;place-items:center;width:56px;height:56px;border-radius:16px;color:#fff;font-size:26px;font-weight:700;
+  background:conic-gradient(from 180deg at 60% 40%, var(--violet-600), var(--fuchsia-600), var(--violet-600))}
+.card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(20px,3.5vw,32px);border:1px solid #eef0ff}
+h1{margin:0;font-size:clamp(20px,2.3vw,28px)} .sub{color:var(--muted);margin:6px 0 18px}
+.grid{display:grid;gap:14px} .grid-2{display:grid;gap:14px}
+@media (min-width:760px){.grid-2{grid-template-columns:1fr 1fr}}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap} .between{justify-content:space-between}
+input,select,textarea{width:100%;padding:12px 14px;border:1px solid #e6e6fb;border-radius:12px;background:#fbfbff;outline:none}
+input:focus,select:focus,textarea:focus{background:#fff;border-color:#a786ff;box-shadow:0 0 0 5px var(--ring)}
+.table{width:100%;border-collapse:separate;border-spacing:0 8px} th,td{padding:10px 8px;text-align:left}
+tr.card-row{background:#fbfbff}
+.badge{padding:4px 8px;border-radius:999px;background:#eef;border:1px solid #dde}
+.actions{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.primary{padding:12px 16px;border:0;border-radius:12px;color:#fff;font-weight:700;background:linear-gradient(90deg,var(--fuchsia-600),var(--violet-600))}
+.link{color:var(--violet-600);text-decoration:none;font-weight:600}
+.link:hover{text-decoration:underline}

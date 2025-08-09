@@ -1,0 +1,156 @@
+<%- include('partials/head', { title: title }) %>
+  <section class="wrap">
+    <div class="brand">
+      <div class="logo">🦷</div>
+      <div>
+        <h1>SmileCare Dental Clinic</h1>
+        <p>ลงทะเบียนเพื่อจองคิว ทำประวัติ และติดตามการรักษา</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>สร้างบัญชีผู้ป่วย</h2>
+      <p class="sub">กรอกข้อมูลด้านล่างเพื่อเริ่มใช้งานระบบของคลินิก</p>
+
+      <% if (message) { %>
+        <div class="alert <%= message.type %>">
+          <%= message.text %>
+        </div>
+        <% } %>
+
+          <h3 class="section-title">ข้อมูลส่วนตัว</h3>
+          <div class="hr"></div>
+
+          <form method="post" action="/register" class="grid" oninput="window.updateStrength('password')"
+            onsubmit="return window.validateRegister(event)">
+
+            <div class="grid-2">
+              <label>คำนำหน้าชื่อ
+                <select name="titleName">
+                  <option value="" <%=!values.titleName ? 'selected' : '' %> disabled>-- เลือก --</option>
+                  <option value="นาย" <%=values.titleName==='นาย' ?'selected':'' %>>นาย</option>
+                  <option value="นาง" <%=values.titleName==='นาง' ?'selected':'' %>>นาง</option>
+                  <option value="นางสาว" <%=values.titleName==='นางสาว' ?'selected':'' %>>นางสาว</option>
+                  <option value="ด.ช." <%=values.titleName==='ด.ช.' ?'selected':'' %>>ด.ช.</option>
+                  <option value="ด.ญ." <%=values.titleName==='ด.ญ.' ?'selected':'' %>>ด.ญ.</option>
+                  <option value="อื่นๆ" <%=values.titleName==='อื่นๆ' ?'selected':'' %>>อื่นๆ</option>
+                </select>
+              </label>
+
+              <label>เพศ
+                <select name="gender">
+                  <option value="" <%=!values.gender ? 'selected' : '' %> disabled>-- เลือก --</option>
+                  <option value="ชาย" <%=values.gender==='ชาย' ?'selected':'' %>>ชาย</option>
+                  <option value="หญิง" <%=values.gender==='หญิง' ?'selected':'' %>>หญิง</option>
+                  <option value="อื่นๆ" <%=values.gender==='อื่นๆ' ?'selected':'' %>>อื่นๆ</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>ชื่อ
+                <input name="firstName" value="<%= values.firstName || '' %>" placeholder="ชื่อจริง" />
+              </label>
+              <label>นามสกุล
+                <input name="lastName" value="<%= values.lastName || '' %>" placeholder="นามสกุล" />
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>วันเกิด
+                <input type="date" name="dob" value="<%= values.dob || '' %>" />
+                <div class="hint">รูปแบบ: ปี-เดือน-วัน (YYYY-MM-DD)</div>
+              </label>
+
+              <label>สถานภาพ
+                <select name="maritalStatus">
+                  <option value="" <%=!values.maritalStatus ? 'selected' : '' %> disabled>-- เลือก --</option>
+                  <option value="โสด" <%=values.maritalStatus==='โสด' ?'selected':'' %>>โสด</option>
+                  <option value="สมรส" <%=values.maritalStatus==='สมรส' ?'selected':'' %>>สมรส</option>
+                  <option value="หย่าร้าง" <%=values.maritalStatus==='หย่าร้าง' ?'selected':'' %>>หย่าร้าง</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>เชื้อชาติ
+                <input name="ethnicity" value="<%= values.ethnicity || '' %>" placeholder="เช่น ไทย จีน ฯลฯ" />
+              </label>
+
+              <label>สัญชาติ
+                <input name="nationality" value="<%= values.nationality || '' %>" placeholder="เช่น ไทย" />
+              </label>
+            </div>
+
+            <div class="grid-2">
+              <label>ศาสนา
+                <select name="religion">
+                  <option value="" <%=!values.religion ? 'selected' : '' %> disabled>-- เลือก --</option>
+                  <option value="พุทธ" <%=values.religion==='พุทธ' ?'selected':'' %>>พุทธ</option>
+                  <option value="อิสลาม" <%=values.religion==='อิสลาม' ?'selected':'' %>>อิสลาม</option>
+                  <option value="คริสต์" <%=values.religion==='คริสต์' ?'selected':'' %>>คริสต์</option>
+                  <option value="พราหมณ์-ฮินดู" <%=values.religion==='พราหมณ์-ฮินดู' ?'selected':'' %>>พราหมณ์-ฮินดู
+                  </option>
+                  <option value="อื่นๆ" <%=values.religion==='อื่นๆ' ?'selected':'' %>>อื่นๆ</option>
+                </select>
+              </label>
+
+              <label>ประวัติแพ้ยา
+                <textarea name="drugAllergy" rows="3"
+                  placeholder="ถ้ามี ระบุชื่อยาและอาการแพ้"><%= values.drugAllergy || '' %></textarea>
+              </label>
+            </div>
+
+            <h3 class="section-title">ข้อมูลสำหรับระบบ</h3>
+            <div class="hr"></div>
+
+            <div class="grid-2">
+              <label>เลขบัตรประชาชน
+                <input name="citizenId" maxlength="13" value="<%= values.citizenId || '' %>"
+                  placeholder="กรอก 13 หลัก" />
+              </label>
+
+              <label>อีเมล
+                <input name="email" value="<%= values.email || '' %>" placeholder="name@example.com" />
+              </label>
+            </div>
+
+            <label>เบอร์โทรศัพท์
+              <input name="phone" value="<%= values.phone || '' %>" placeholder="08x-xxx-xxxx" />
+            </label>
+
+            <label>รหัสผ่าน
+              <div class="relative">
+                <input id="password" type="password" name="password" placeholder="อย่างน้อย 8 ตัวอักษร" />
+                <button class="toggle" type="button" onclick="window.toggleVisibility('password')">👁️</button>
+              </div>
+              <div class="bar"><span id="bar"></span></div>
+            </label>
+
+            <label>ยืนยันรหัสผ่าน
+              <div class="relative">
+                <input id="confirm" type="password" name="confirm" />
+                <button class="toggle" type="button" onclick="window.toggleVisibility('confirm')">👁️</button>
+              </div>
+            </label>
+
+            <label class="accept">
+      
+              <div style="display:flex; align-items:center; justify-content:flex-start;">
+              <input type="checkbox" name="agree" value="1" />
+              <a class="link" href="https://www.ratchakitcha.soc.go.th/DATA/PDF/2562/A/069/T_0052.PDF" target="_blank"
+                rel="noopener">
+                ข้อกำหนดและนโยบายความเป็นส่วนตัว
+              </a>
+            </div>
+            </label>
+            
+
+            <div class="actions">
+              <button class="primary" type="submit" style="margin-top:10px; margin-bottom:10px;">สร้างบัญชี</button>
+              <a class="link" href="/login">← กลับไปหน้าเข้าสู่ระบบ</a>
+            </div>
+          </form>
+    </div>
+  </section>
+  <%- include('partials/foot') %>

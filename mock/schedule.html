@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ตารางนัดหมาย | SmileCare</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <div class="brand">
+      <div class="logo">🦷</div>
+      <div><h1>ตารางเวลานัดหมาย</h1><p class="sub">รายการนัดของผู้ป่วยที่ลงคิว</p></div>
+    </div>
+
+    <div class="card">
+      <div class="grid-2">
+        <label>วันที่ <input type="date" id="d" oninput="applyFilter()"/></label>
+        <label>ค้นหา (ชื่อ/หมอ/เหตุผล) <input id="t" placeholder="พิมพ์เพื่อกรอง" oninput="applyFilter()"/></label>
+      </div>
+
+      <div style="overflow:auto;margin-top:12px;">
+        <table class="table">
+          <thead><tr><th>วัน-เวลา</th><th>ผู้ป่วย</th><th>ทันตแพทย์</th><th>ห้อง</th><th>เหตุผล</th></tr></thead>
+          <tbody id="ap-body"></tbody>
+        </table>
+      </div>
+
+      <div class="actions" style="margin-top:12px;">
+        <a class="link" href="index.html">← กลับหน้าเมนู</a>
+        <span></span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const pts = {
+  PT001:{titleName:'นาย', firstName:'สมชาย', lastName:'สุขใจ'},
+  PT002:{titleName:'นางสาว', firstName:'กมลทิพย์', lastName:'ยิ้มแย้ม'},
+};
+const appts = [
+  { id:'AP001', patientId:'PT001', date:'2025-08-12', time:'09:30', dentist:'ทพ. ธนา', room:'ห้อง 2', reason:'อุดฟัน' },
+  { id:'AP002', patientId:'PT002', date:'2025-08-12', time:'10:00', dentist:'ทพญ. มนัสวี', room:'ห้อง 1', reason:'ขูดหินปูน' },
+  { id:'AP003', patientId:'PT001', date:'2025-08-13', time:'11:00', dentist:'ทพญ. มนัสวี', room:'ห้อง 3', reason:'เอ็กซเรย์' },
+];
+function fullName(p){ return `${p.titleName}${p.firstName} ${p.lastName}`; }
+function render(list){
+  document.getElementById('ap-body').innerHTML = list.map(r=>`
+    <tr class="card-row" data-date="${r.date}" data-text="${(fullName(pts[r.patientId])+' '+r.dentist+' '+r.reason).toLowerCase()}">
+      <td>${r.date} ${r.time}</td>
+      <td>${fullName(pts[r.patientId])}</td>
+      <td>${r.dentist}</td>
+      <td>${r.room}</td>
+      <td>${r.reason}</td>
+    </tr>`).join('');
+}
+function applyFilter(){
+  const d=document.getElementById('d').value;
+  const t=(document.getElementById('t').value||'').toLowerCase();
+  document.querySelectorAll('#ap-body tr').forEach(tr=>{
+    const okDate=!d || tr.dataset.date===d;
+    const okText=!t || tr.dataset.text.includes(t);
+    tr.style.display=(okDate && okText)?'':'none';
+  });
+}
+render(appts);
+</script>
+</body>
+</html>

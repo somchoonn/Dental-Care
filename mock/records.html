@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>เวชระเบียน | SmileCare</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <div class="brand">
+      <div class="logo">🦷</div>
+      <div><h1>เวชระเบียนผู้ป่วย</h1><p class="sub">ดู/ค้นหา ข้อมูลผู้ป่วย และลงทะเบียนผู้ป่วยใหม่</p></div>
+    </div>
+
+    <div class="card">
+      <div class="row between" style="margin-bottom:12px;">
+        <h2 style="margin:0;">รายการผู้ป่วย</h2>
+        <a class="link" href="register.html">+ ลงทะเบียนผู้ป่วยใหม่</a>
+      </div>
+
+      <div class="grid-2">
+        <label>ค้นหา
+          <input id="q" placeholder="ชื่อ นามสกุล เลขบัตร หรือเบอร์" oninput="filterPatients()"/>
+        </label>
+        <div></div>
+      </div>
+
+      <div style="overflow:auto;margin-top:10px;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>รหัส</th><th>ชื่อ-นามสกุล</th><th>เลขบัตร</th><th>เพศ</th><th>วันเกิด</th><th>โทร</th>
+            </tr>
+          </thead>
+          <tbody id="pt-body">
+            <!-- mock data -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="actions" style="margin-top:12px;">
+        <a class="link" href="index.html">← กลับหน้าเมนู</a>
+        <a class="primary" href="register.html" style="text-decoration:none;display:inline-block;">ลงทะเบียนผู้ป่วยใหม่</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script>
+const patients = [
+  { id:'PT001', cid:'1101700234567', titleName:'นาย', firstName:'สมชาย', lastName:'สุขใจ', gender:'ชาย', dob:'1995-02-14', phone:'0812345678' },
+  { id:'PT002', cid:'1719900123456', titleName:'นางสาว', firstName:'กมลทิพย์', lastName:'ยิ้มแย้ม', gender:'หญิง', dob:'2000-10-01', phone:'0891112222' },
+  { id:'PT003', cid:'1101700000001', titleName:'นาง', firstName:'มาลี', lastName:'แก้วใส', gender:'หญิง', dob:'1987-06-21', phone:'0862223344' },
+];
+function render(list){
+  const tb=document.getElementById('pt-body');
+  tb.innerHTML=list.map(p=>`
+    <tr class="card-row">
+      <td>${p.id}</td>
+      <td>${p.titleName}${p.firstName} ${p.lastName}</td>
+      <td>${p.cid}</td>
+      <td><span class="badge">${p.gender}</span></td>
+      <td>${p.dob}</td>
+      <td>${p.phone}</td>
+    </tr>
+  `).join('');
+}
+function filterPatients(){
+  const q=(document.getElementById('q').value||'').toLowerCase();
+  render(patients.filter(p=>(`${p.id} ${p.titleName}${p.firstName} ${p.lastName} ${p.cid} ${p.phone}`).toLowerCase().includes(q)));
+}
+render(patients);
+</script>
+</body>
+</html>

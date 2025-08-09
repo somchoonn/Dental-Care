@@ -1,0 +1,66 @@
+<%- include('partials/head', { title: title }) %>
+<section class="wrap">
+  <div class="brand">
+    <div class="logo">🦷</div>
+    <div>
+      <h1>เวชระเบียนผู้ป่วย</h1>
+      <p>ดู/ค้นหา ข้อมูลผู้ป่วย และลงทะเบียนผู้ป่วยใหม่</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row between" style="margin-bottom:12px;">
+      <h2 style="margin:0;">รายการผู้ป่วย</h2>
+      <a class="link" href="/records/new">+ ลงทะเบียนผู้ป่วยใหม่</a>
+    </div>
+
+    <div class="grid" style="gap:10px;">
+      <label>ค้นหา
+        <input id="q" placeholder="ชื่อ นามสกุล หรือเลขบัตรประชาชน" oninput="filterPatients()" />
+      </label>
+    </div>
+
+    <div style="overflow:auto; margin-top:10px;">
+      <table style="width:100%; border-collapse:separate; border-spacing:0 8px;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:8px;">รหัส</th>
+            <th style="text-align:left; padding:8px;">ชื่อ-นามสกุล</th>
+            <th style="text-align:left; padding:8px;">เลขบัตร</th>
+            <th style="text-align:left; padding:8px;">เพศ</th>
+            <th style="text-align:left; padding:8px;">วันเกิด</th>
+            <th style="text-align:left; padding:8px;">โทร</th>
+          </tr>
+        </thead>
+        <tbody id="pt-body">
+          <% patients.forEach(p => { %>
+            <tr style="background:#fbfbff;border-radius:12px;">
+              <td style="padding:10px 8px;"><%= p.id %></td>
+              <td style="padding:10px 8px;"><%= p.titleName %><%= p.firstName %> <%= p.lastName %></td>
+              <td style="padding:10px 8px;"><%= p.cid %></td>
+              <td style="padding:10px 8px;"><%= p.gender %></td>
+              <td style="padding:10px 8px;"><%= p.dob %></td>
+              <td style="padding:10px 8px;"><%= p.phone %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="actions" style="margin-top:12px;">
+      <a class="link" href="/register">+ สร้างบัญชีผู้ป่วยใหม่</a>
+    </div>
+  </div>
+</section>
+
+<script>
+function filterPatients(){
+  const q = (document.getElementById('q').value || '').toLowerCase();
+  const rows = Array.from(document.querySelectorAll('#pt-body tr'));
+  rows.forEach(r => {
+    const text = r.innerText.toLowerCase();
+    r.style.display = text.includes(q) ? '' : 'none';
+  });
+}
+</script>
+<%- include('partials/foot') %>
