@@ -21,7 +21,7 @@
 
       <div style="overflow:auto;margin-top:12px;">
         <table class="table">
-          <thead><tr><th>วัน-เวลา</th><th>ผู้ป่วย</th><th>ทันตแพทย์</th><th>ห้อง</th><th>เหตุผล</th></tr></thead>
+          <thead><tr><th>วัน-เวลา</th><th>ผู้ป่วย</th><th>ทันตแพทย์</th><th>ห้อง</th><th>รักษา</th></tr></thead>
           <tbody id="ap-body"></tbody>
         </table>
       </div>
@@ -36,14 +36,12 @@
 
 <script>
 const pts = {
-  PT001:{titleName:'นาย', firstName:'สมชาย', lastName:'สุขใจ'},
-  PT002:{titleName:'นางสาว', firstName:'กมลทิพย์', lastName:'ยิ้มแย้ม'},
+  PT001:{titleName:'นาย', firstName:'ชนกชนม์', lastName:'แผ่นคำ'},
+ PT002:{id:'PT002', titleName:'นางสาว', firstName:'พัทธ์ธีรา', lastName:'บุตรธรรม'},
 };
 const appts = [
-  { id:'AP001', patientId:'PT001', date:'2025-08-12', time:'09:30', dentist:'ทพ. ธนา', room:'ห้อง 2', reason:'อุดฟัน' },
-  { id:'AP002', patientId:'PT002', date:'2025-08-12', time:'10:00', dentist:'ทพญ. มนัสวี', room:'ห้อง 1', reason:'ขูดหินปูน' },
-  { id:'AP003', patientId:'PT001', date:'2025-08-13', time:'11:00', dentist:'ทพญ. มนัสวี', room:'ห้อง 3', reason:'เอ็กซเรย์' },
-];
+  { id:'AP001', patientId:'PT001', date:'2025-08-12', time:'09:30', dentist:'Doctor', room:'ห้อง 2', reason:'อุดฟัน' },
+  { id:'AP002', patientId:'PT002', date:'2025-08-12', time:'10:00', dentist:'Doctor', room:'ห้อง 1', reason:'ขูดหินปูน' },]
 function fullName(p){ return `${p.titleName}${p.firstName} ${p.lastName}`; }
 function render(list){
   document.getElementById('ap-body').innerHTML = list.map(r=>`

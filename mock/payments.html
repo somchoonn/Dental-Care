@@ -1,63 +1,370 @@
 <!doctype html>
 <html lang="th">
 <head>
-  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ชำระเงิน | SmileCare</title>
-  <link rel="stylesheet" href="styles.css"/>
+  <link rel="stylesheet" href="styles2.css" />
+  <style>
+    /* เติมสไตล์เฉพาะหน้าชำระเงินให้ดูเนี๊ยบขึ้น */
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px
+    }
+
+    .toolbar .left,
+    .toolbar .right {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center
+    }
+
+    .pill {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid #e6e6fb;
+      background: #fbfbff;
+      cursor: pointer;
+      font-weight: 600
+    }
+
+    .pill[data-active="true"] {
+      background: #efe9ff;
+      border-color: #d8cfff;
+      color: #5936ff
+    }
+
+    .search {
+      position: relative
+    }
+
+    .search input {
+      padding-left: 34px
+    }
+
+    .search:before {
+      content: "🔎";
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: .7
+    }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 12px
+    }
+
+    @media (max-width:780px) {
+      .summary {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .card-mini {
+      background: #fff;
+      border: 1px solid #eef0ff;
+      border-radius: 14px;
+      padding: 12px 14px
+    }
+
+    .k {
+      color: #5b6b8a;
+      font-size: 12px;
+      margin-bottom: 2px
+    }
+
+    .v {
+      font-size: 20px;
+      font-weight: 800
+    }
+
+    .table th {
+      user-select: none;
+      cursor: pointer
+    }
+
+    .table th .sort {
+      opacity: .5;
+      font-size: 12px;
+      margin-left: 6px
+    }
+
+    .status-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: center
+    }
+
+    .actions .primary {
+      width: auto
+    }
+
+    .btn {
+      border: 1px solid #e6e6fb;
+      background: #fff;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-weight: 600;
+      cursor: pointer
+    }
+
+    .btn:hover {
+      background: #f6f6ff
+    }
+
+    .btn-danger {
+      border-color: #ffd7d7;
+      color: #a32020
+    }
+
+    .note {
+      color: #7b86a8;
+      font-size: 12px
+    }
+  </style>
 </head>
+
 <body>
-<main>
-  <section class="wrap">
-    <div class="brand">
-      <div class="logo">🦷</div>
-      <div><h1>ชำระเงิน</h1><p class="sub">แสดงรายละเอียดค่ารักษาและยอดที่ต้องจ่าย</p></div>
-    </div>
-
-    <div class="card" id="bills"></div>
-
-    <div class="card">
-      <a class="link" href="index.html">← กลับหน้าเมนู</a>
-    </div>
-  </section>
-</main>
-
-<script>
-const patients = {
-  PT001:{id:'PT001', titleName:'นาย', firstName:'สมชาย', lastName:'สุขใจ'},
-  PT002:{id:'PT002', titleName:'นางสาว', firstName:'กมลทิพย์', lastName:'ยิ้มแย้ม'},
-};
-const bills = [
-  { id:'PM001', patientId:'PT001', items:[{name:'อุดฟัน (เรซิน)', qty:1, price:1200},{name:'ค่าบริการคลินิก', qty:1, price:100}] },
-  { id:'PM002', patientId:'PT002', items:[{name:'ขูดหินปูน', qty:1, price:900},{name:'ค่าบริการคลินิก', qty:1, price:100}] },
-];
-function money(n){ return n.toLocaleString(); }
-function card(b){
-  const pt = patients[b.patientId];
-  const total = b.items.reduce((s,it)=>s+it.qty*it.price,0);
-  const rows = b.items.map(it=>`
-    <tr><td>${it.name}</td>
-        <td style="text-align:right">${it.qty}</td>
-        <td style="text-align:right">${money(it.price)}</td>
-        <td style="text-align:right">${money(it.qty*it.price)}</td></tr>`).join('');
-  return `
-    <div style="border:1px solid #eef0ff;border-radius:14px;padding:14px;margin-bottom:14px;background:#fcfcff;">
-      <div class="row between" style="margin-bottom:6px;">
-        <div><strong>${pt.titleName}${pt.firstName} ${pt.lastName}</strong> · <span style="color:#667">ID: ${pt.id}</span></div>
-        <div><strong>รวม: ${money(total)} บาท</strong></div>
+  <main>
+    <section class="wrap">
+      <div class="brand">
+        <div class="logo">
+          <img src="logo.png" alt="Dentalcare Logo">
+        </div>
+        <div>
+          <h1>DENTALCARE</h1>
+          <p class="sub">PAYMENT</p>
+        </div>
       </div>
+
+
+      <!-- แถบสรุป -->
+      <div class="summary">
+        <div class="card-mini">
+          <div class="k">จำนวนบิลทั้งหมด</div>
+          <div id="sum-count" class="v">—</div>
+        </div>
+        <div class="card-mini">
+          <div class="k">ยอดคงค้าง (ยังไม่ชำระ)</div>
+          <div id="sum-unpaid" class="v">—</div>
+        </div>
+        <div class="card-mini">
+          <div class="k">ยอดที่ชำระแล้ว</div>
+          <div id="sum-paid" class="v">—</div>
+        </div>
+      </div>
+
+      <!-- แถบเครื่องมือ -->
+      <div class="card">
+        <div class="toolbar">
+          <div class="left">
+            <button class="pill" data-filter="all" data-active="true" onclick="setFilter('all',this)">ทั้งหมด</button>
+            <button class="pill" data-filter="unpaid" data-active="false"
+              onclick="setFilter('unpaid',this)">ยังไม่ชำระ</button>
+            <button class="pill" data-filter="paid" data-active="false"
+              onclick="setFilter('paid',this)">ชำระแล้ว</button>
+            <div class="search">
+              <input id="q" placeholder="ค้นหา ชื่อ/รายการ/รหัสบิล" oninput="render()" />
+            </div>
+          </div>
+          <div class="right">
+            <select id="sort" class="btn" onchange="render()">
+              <option value="date_desc">เรียง: วันที่ล่าสุด</option>
+              <option value="date_asc">เรียง: วันที่เก่า</option>
+              <option value="amount_desc">เรียง: ยอดมาก→น้อย</option>
+              <option value="amount_asc">เรียง: ยอดน้อย→มาก</option>
+            </select>
+            <button class="btn" onclick="exportCSV()">Export Excel</button>
+          </div>
+        </div>
+
+        <!-- รายการบิล -->
+        <div id="bills"></div>
+        <div class="note">อัปเดตล่าสุด: <span id="ts"></span></div>
+      </div>
+
+      <div class="card">
+        <a class="link" href="index.html">← กลับหน้าเมนู</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // ——— Mock data ———
+    const patients = {
+      PT001: { id: 'PT001', titleName: 'นาย', firstName: 'ชนกชนม์', lastName: 'แผ่นคำ' },
+      PT002: { id: 'PT002', titleName: 'นางสาว', firstName: 'พัทธ์ธีรา', lastName: 'บุตรธรรม' },
+    };
+
+    // เพิ่มฟิลด์วันที่ billDate เพื่อเรียง/แสดง
+    let bills = [
+      { id: 'PM001', billDate: '2025-08-10', patientId: 'PT001', status: 'unpaid', items: [{ name: 'อุดฟัน', qty: 1, price: 1200 }, { name: 'ค่าบริการ', qty: 1, price: 100 }] },
+      { id: 'PM002', billDate: '2025-08-09', patientId: 'PT002', status: 'paid', items: [{ name: 'ขูดหินปูน', qty: 1, price: 900 }, { name: 'ค่าบริการ', qty: 1, price: 100 }] },
+    ];
+
+    let currentFilter = 'all';
+
+    function money(n) { return n.toLocaleString(); }
+    function fullName(p) { return `${p.titleName}${p.firstName} ${p.lastName}`; }
+
+    function statusBadge(status) {
+      const txt = status === 'paid' ? 'ชำระแล้ว' : 'ยังไม่ชำระ';
+      const color = status === 'paid'
+        ? 'background:#eafff2;border:1px solid #c7f9dd;color:#0a6b34;'
+        : 'background:#fff6f6;border:1px solid #ffd7d7;color:#a32020;';
+      return `<span class="badge" style="${color} padding:4px 8px;border-radius:999px;">${txt}</span>`;
+    }
+
+    function billTotal(b) { return b.items.reduce((s, it) => s + it.qty * it.price, 0); }
+
+    function card(b) {
+      const pt = patients[b.patientId];
+      const total = billTotal(b);
+      const rows = b.items.map(it => `
+    <tr>
+      <td>${it.name}</td>
+      <td style="text-align:right">${it.qty}</td>
+      <td style="text-align:right">${money(it.price)}</td>
+      <td style="text-align:right">${money(it.qty * it.price)}</td>
+    </tr>`).join('');
+
+      const payBtn = b.status === 'paid'
+        ? `<button class="primary" type="button" disabled style="opacity:.6;cursor:not-allowed;">ชำระเงินแล้ว</button>`
+        : `<button class="primary" type="button" onclick="markPaid('${b.id}')">ชำระเงิน</button>`;
+
+      const undoBtn = b.status === 'paid'
+        ? `<button class="btn btn-danger" type="button" onclick="markUnpaid('${b.id}')">ยกเลิกการชำระ</button>`
+        : '';
+
+      return `
+    <div style="border:1px solid #eef0ff;border-radius:14px;padding:14px;margin-bottom:14px;background:#fcfcff;">
+      <div class="row between" style="margin-bottom:6px;align-items:flex-start;">
+        <div>
+          <div><strong>${fullName(pt)}</strong> · <span style="color:#667">Patient ID: ${pt.id}</span></div>
+          <div class="note">เลขที่บิล: ${b.id} • วันที่ออกบิล: ${b.billDate}</div>
+        </div>
+        <div class="status-wrap">
+          ${statusBadge(b.status)}
+          <strong>รวม: ${money(total)} บาท</strong>
+        </div>
+      </div>
+
       <div style="overflow:auto;">
         <table class="table" style="border-spacing:0">
-          <thead><tr><th>รายการ</th><th style="text-align:right">จำนวน</th><th style="text-align:right">ราคา/หน่วย</th><th style="text-align:right">เป็นเงิน</th></tr></thead>
+          <thead>
+            <tr>
+              <th>รายการ</th>
+              <th style="text-align:right">จำนวน</th>
+              <th style="text-align:right">ราคา/หน่วย</th>
+              <th style="text-align:right">รวม</th>
+            </tr>
+          </thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
+
       <div class="actions" style="margin-top:10px;">
-        <a class="link" href="#">พิมพ์ใบเสร็จ</a>
-        <button class="primary" type="button" onclick="alert('ชำระเงิน (เดโม) สำเร็จ')">ชำระเงิน</button>
+        <a class="link" href="#" onclick="window.print();return false;">พิมพ์ใบเสร็จ</a>
+        <div style="display:flex;gap:8px;align-items:center">
+          ${undoBtn}
+          ${payBtn}
+        </div>
       </div>
     </div>`;
-}
-document.getElementById('bills').innerHTML = bills.map(card).join('');
-</script>
+    }
+
+    function setFilter(f, btn) {
+      currentFilter = f;
+      document.querySelectorAll('.pill').forEach(p => p.dataset.active = (p === btn));
+      render();
+    }
+
+    function filteredSorted() {
+      // filter
+      const q = (document.getElementById('q').value || '').toLowerCase();
+      let data = bills.filter(b => {
+        const pt = patients[b.patientId];
+        const hay = `${b.id} ${fullName(pt)} ${b.items.map(i => i.name).join(' ')}`.toLowerCase();
+        const passText = !q || hay.includes(q);
+        const passFilter = currentFilter === 'all' ? true : b.status === currentFilter;
+        return passText && passFilter;
+      });
+      // sort
+      const sort = document.getElementById('sort').value;
+      data.sort((a, b) => {
+        if (sort === 'date_desc') return (a.billDate > b.billDate ? -1 : 1);
+        if (sort === 'date_asc') return (a.billDate < b.billDate ? -1 : 1);
+        if (sort === 'name_asc') return fullName(patients[a.patientId]).localeCompare(fullName(patients[b.patientId]));
+        if (sort === 'amount_desc') return billTotal(b) - billTotal(a);
+        if (sort === 'amount_asc') return billTotal(a) - billTotal(b);
+        return 0;
+      });
+      return data;
+    }
+
+    function render() {
+      const data = filteredSorted();
+      document.getElementById('bills').innerHTML = data.map(card).join('');
+      // summary
+      const totalAll = bills.reduce((s, b) => s + billTotal(b), 0);
+      const totalUnpay = bills.filter(b => b.status === 'unpaid').reduce((s, b) => s + billTotal(b), 0);
+      const totalPaid = totalAll - totalUnpay;
+      document.getElementById('sum-count').textContent = bills.length.toLocaleString();
+      document.getElementById('sum-unpaid').textContent = totalUnpay.toLocaleString() + ' บาท';
+      document.getElementById('sum-paid').textContent = totalPaid.toLocaleString() + ' บาท';
+      document.getElementById('ts').textContent = new Date().toLocaleString();
+    }
+
+    function markPaid(id) {
+      const b = bills.find(x => x.id === id);
+      if (!b) return;
+      if (!confirm(`ยืนยันการชำระบิลเลขที่ ${id} ?`)) return;
+      b.status = 'paid';
+      render();
+      // alert('ชำระเงินสำเร็จ');
+    }
+
+    function markUnpaid(id) {
+      const b = bills.find(x => x.id === id);
+      if (!b) return;
+      if (!confirm(`ต้องการยกเลิกการชำระบิลเลขที่ ${id} ?`)) return;
+      b.status = 'unpaid';
+      render();
+    }
+
+    function exportCSV() {
+      const data = filteredSorted();
+      const rows = [
+        ['BillID', 'BillDate', 'PatientID', 'PatientName', 'Status', 'Item', 'Qty', 'UnitPrice', 'Amount', 'BillTotal']
+      ];
+      data.forEach(b => {
+        const pt = patients[b.patientId];
+        const name = fullName(pt);
+        const billT = billTotal(b);
+        b.items.forEach(it => {
+          rows.push([b.id, b.billDate, pt.id, name, b.status, it.name, it.qty, it.price, it.qty * it.price, billT]);
+        });
+      });
+      const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `payments_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    render();
+  </script>
 </body>
+
 </html>

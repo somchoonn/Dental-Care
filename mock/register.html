@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ลงทะเบียน | Dentalcare Clinic</title>
+  <link rel="stylesheet" href="styles2.css"/>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <!-- Brand -->
+    <div class="brand">
+      <div class="logo"><img src="logo.png" alt="Dentalcare Logo"></div>
+      <div>
+        <h1>ลงทะเบียนผู้ใช้งาน</h1>
+        <p class="sub">ระบบจัดการคลินิกทันตกรรม</p>
+      </div>
+    </div>
+
+    <!-- Card -->
+    <div class="card">
+      <form>
+        <div class="grid-2">
+          <div>
+            <label for="prefix">คำหน้าชื่อ</label>
+            <select id="prefix" name="prefix" required>
+              <option value="">เลือก</option>
+              <option>นาย</option>
+              <option>นาง</option>
+              <option>นางสาว</option>
+            </select>
+          </div>
+          <div>
+            <label for="gender">เพศ</label>
+            <select id="gender" name="gender" required>
+              <option value="">เลือก</option>
+              <option>ชาย</option>
+              <option>หญิง</option>
+              <option>อื่น ๆ</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="fname">ชื่อ</label>
+            <input type="text" id="fname" name="fname" required>
+          </div>
+          <div>
+            <label for="lname">นามสกุล</label>
+            <input type="text" id="lname" name="lname" required>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="dob">วันเกิด</label>
+            <input type="date" id="dob" name="dob" required>
+          </div>
+          <div>
+            <label for="status">สถานภาพ</label>
+            <select id="status" name="status" required>
+              <option value="">เลือก</option>
+              <option>โสด</option>
+              <option>สมรส</option>
+              <option>หย่า</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="race">เชื้อชาติ</label>
+            <input type="text" id="race" name="race">
+          </div>
+          <div>
+            <label for="nationality">สัญชาติ</label>
+            <input type="text" id="nationality" name="nationality">
+          </div>
+        </div>
+
+        <div>
+          <label for="religion">ศาสนา</label>
+          <input type="text" id="religion" name="religion">
+        </div>
+
+        <div>
+          <label for="allergy">ประวัติแพ้ยา</label>
+          <textarea id="allergy" name="allergy" rows="2"></textarea>
+        </div>
+
+        <div>
+          <label for="citizen">รหัสบัตรประชาชน</label>
+          <input type="text" id="citizen" name="citizen" required>
+        </div>
+
+        <div class="grid-2">
+          <div>
+            <label for="password">รหัสผ่าน</label>
+            <input type="password" id="password" name="password" required>
+          </div>
+          <div>
+            <label for="confirm">ยืนยันรหัสผ่าน</label>
+            <input type="password" id="confirm" name="confirm" required>
+          </div>
+        </div>
+
+        <label class="accept" style="margin-top:12px;">
+          <input type="checkbox" name="agree" value="1" required>
+          <span>ฉันยอมรับ <a class="link" href="https://www.ratchakitcha.soc.go.th/DATA/PDF/2562/A/069/T_0052.PDF" target="_blank">ข้อกำหนดและนโยบายความเป็นส่วนตัว</a></span>
+        </label>
+
+        <div class="actions" style="margin-top:16px;">
+          <button class="primary" type="submit">สร้างบัญชี</button>
+          <a class="link" href="login.html">← กลับเข้าสู่ระบบ</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+</body>
+</html>
