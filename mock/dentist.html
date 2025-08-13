@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>ทันตแพทย์ | ประวัติผู้ป่วย & บันทึกการรักษา</title>
+  <link rel="stylesheet" href="styles2.css"/>
+  <style>
+    /* เสริมเล็กน้อยสำหรับหน้านี้ */
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .pill{padding:8px 12px;border-radius:999px;border:1px solid #dbe8f4;background:#fbfdff;font-weight:700}
+    .pill.active{background:#e7f4ff;border-color:#cde6ff;color:#0e5b93}
+    .muted{color:#5a6e84}
+    .mini{font-size:12px;color:#6a7f96}
+    .card-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .table th,.table td{vertical-align:top}
+    .danger{color:#a32020}
+    .ok{color:#0a6b34}
+    .grid-3{display:grid;gap:14px}
+    @media (min-width:900px){.grid-3{grid-template-columns: 1fr 1fr 1fr}}
+  </style>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <!-- Header -->
+    <div class="brand">
+      <div class="logo"><img src="logo.png" alt="Dentalcare Logo"></div>
+      <div>
+        <h1>ข้อมูลผู้ป่วย & บันทึกการรักษา</h1>
+        <p class="sub">Dentalcare Clinic — สำหรับทันตแพทย์</p>
+      </div>
+    </div>
+
+    <!-- เลือกผู้ป่วย -->
+    <div class="card">
+      <div class="card-title">
+        <h2 style="margin:0">เลือกผู้ป่วย</h2>
+        <div class="toolbar">
+          <input id="q" placeholder="ค้นหา ชื่อ/รหัส/เลขบัตร" oninput="filterPatients()"/>
+          <button class="pill" id="btn-reset" onclick="resetFilter()">รีเซ็ต</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <label>รายการผู้ป่วย
+          <select id="patientSelect" onchange="selectPatient(this.value)"></select>
+        </label>
+        <div>
+          <label>ข้อมูลย่อ</label>
+          <div id="patientBrief" class="mini muted">เลือกผู้ป่วยเพื่อแสดงรายละเอียด</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ประวัติ & นัดหมาย -->
+    <div class="card">
+      <div class="grid-3">
+        <div>
+          <h3 style="margin:0 0 6px">ประวัติผู้ป่วย</h3>
+          <div id="patientInfo" class="mini muted">—</div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 6px">ประวัติการรักษาย้อนหลัง</h3>
+          <div style="overflow:auto;max-height:240px">
+            <table class="table" style="border-spacing:0" id="historyTable">
+              <thead>
+                <tr>
+                  <th>วันที่</th><th>ซี่</th><th>รายการ</th><th>ผู้รักษา</th><th>หมายเหตุ</th><th style="text-align:right">ค่ารักษา</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody"><tr><td colspan="6" class="mini muted">— ไม่มีข้อมูล —</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div>
+          <h3 style="margin:0 0 6px">นัดหมาย</h3>
+          <div id="aptBox" class="mini muted">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ฟอร์มบันทึกการรักษา -->
+    <div class="card">
+      <h2 style="margin:0 0 8px">บันทึกการรักษา</h2>
+      <p class="mini">กรอกข้อมูลการรักษาในวันนี้ แล้วกด “บันทึก” ข้อมูลจะถูกเก็บไว้ในเครื่อง (localStorage) เพื่อเดโม</p>
+
+      <form id="treatForm" onsubmit="return saveTreatment(event)">
+        <div class="grid-2">
+          <label>ผู้ป่วยที่เลือก
+            <input id="f_patient" readonly placeholder="ยังไม่เลือกผู้ป่วย">
+          </label>
+          <label>วันที่รักษา
+            <input type="date" id="f_date" required>
+          </label>
+        </div>
+
+        <div class="grid-2">
+          <label>ซี่ฟัน (เช่น 11, 26 หรือรวมหลายซี่คั่นด้วย ,)
+            <input id="f_tooth" placeholder="ตัวอย่าง: 11, 12">
+          </label>
+          <label>ค่ารักษา (บาท)
+            <input id="f_fee" type="number" min="0" step="1" placeholder="0">
+          </label>
+        </div>
+
+        <div class="grid-2">
+          <label>รายการรักษา
+            <input id="f_proc" placeholder="เช่น อุดฟันเรซิน, ขูดหินปูน" required>
+          </label>
+          <label>ทันตแพทย์ผู้รักษา
+            <input id="f_dentist" placeholder="เช่น ทพ. ธนา" required>
+          </label>
+        </div>
+
+        <label>หมายเหตุ
+          <textarea id="f_note" rows="2" placeholder="รายละเอียดเพิ่มเติม เช่น ยาชา x carpule, แนะนำการดูแล"></textarea>
+        </label>
+
+        <label>นัดหมายครั้งถัดไป (ถ้ามี)
+          <input type="date" id="f_next">
+        </label>
+
+        <div class="actions" style="margin-top:10px;">
+          <a class="link" href="#" onclick="window.print();return false;">พิมพ์</a>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="pill" type="button" onclick="clearForm()">ล้างฟอร์ม</button>
+            <button class="primary" type="submit">บันทึก</button>
+          </div>
+        </div>
+      </form>
+
+      <div id="msg" class="mini" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- ลิงก์กลับเมนู -->
+    <div class="card">
+      <a class="link" href="index.html">← กลับหน้าเมนู</a>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ================= Mock Data ================ */
+// ผู้ป่วยตัวอย่าง
+const PATIENTS = [
+  { id:'PT001', cid:'1101700234567', titleName:'นาย', firstName:'ชนกชนม์', lastName:'แผ่นคำ', gender:'ชาย', dob:'1995-02-14', phone:'081-234-5678', allergy:'แพ้เพนิซิลลิน' },
+  { id:'PT002', cid:'1719900123456', titleName:'นางสาว', firstName:'พัทธ์ธีรา', lastName:'บุตรธรรม', gender:'หญิง', dob:'2000-10-01', phone:'089-111-2222', allergy:'' }
+];
+// นัดหมายตัวอย่าง
+const APPOINTMENTS = [
+  { patientId:'PT001', date:'2025-08-15', time:'10:00', dentist:'ทพ. ธนา', room:'ห้อง 2', reason:'ติดตามผลอุดฟัน' },
+  { patientId:'PT002', date:'2025-08-18', time:'09:30', dentist:'ทพญ. มนัสวี', room:'ห้อง 1', reason:'ขูดหินปูน' },
+];
+
+/* ======== State & Storage ======== */
+let currentPatientId = null;
+const LS_KEY = 'dentalcare_treatments'; // [{patientId,date,tooth,proc,fee,note,dentist,next}]
+function loadTreatments(){
+  try{ return JSON.parse(localStorage.getItem(LS_KEY)||'[]'); }catch{ return []; }
+}
+function saveTreatments(arr){
+  localStorage.setItem(LS_KEY, JSON.stringify(arr));
+}
+
+/* ======== UI Init ======== */
+function fillPatientSelect(list){
+  const el = document.getElementById('patientSelect');
+  el.innerHTML = '<option value="">— เลือกผู้ป่วย —</option>' + list.map(p=>(
+    `<option value="${p.id}">${p.id} · ${p.titleName}${p.firstName} ${p.lastName}</option>`
+  )).join('');
+}
+function humanName(p){ return `${p.titleName}${p.firstName} ${p.lastName}`; }
+function money(n){ return (+n||0).toLocaleString(); }
+
+function selectPatient(pid){
+  currentPatientId = pid || null;
+  const p = PATIENTS.find(x=>x.id===pid);
+  document.getElementById('f_patient').value = p ? `${p.id} · ${humanName(p)}` : '';
+  renderBrief(p);
+  renderInfo(p);
+  renderHistory(pid);
+  renderAppt(pid);
+}
+
+function renderBrief(p){
+  const el = document.getElementById('patientBrief');
+  if(!p){ el.textContent = 'เลือกผู้ป่วยเพื่อแสดงรายละเอียด'; return; }
+  el.innerHTML = `${humanName(p)} · เพศ ${p.gender} · เกิด ${p.dob} · โทร ${p.phone}`;
+}
+
+function renderInfo(p){
+  const el = document.getElementById('patientInfo');
+  if(!p){ el.textContent = '—'; return; }
+  el.innerHTML = `
+    <div><strong>รหัส:</strong> ${p.id}</div>
+    <div><strong>เลขบัตร:</strong> ${p.cid}</div>
+    <div><strong>เพศ:</strong> ${p.gender} · <strong>วันเกิด:</strong> ${p.dob}</div>
+    <div><strong>โทร:</strong> ${p.phone}</div>
+    <div><strong>ประวัติแพ้ยา:</strong> ${p.allergy ? `<span class="danger">${p.allergy}</span>`:'—'}</div>
+  `;
+}
+
+function renderHistory(pid){
+  const tb = document.getElementById('historyBody');
+  const all = loadTreatments().filter(t=>t.patientId===pid)
+              .sort((a,b)=> (a.date<b.date?1:-1));
+  if(!pid || all.length===0){
+    tb.innerHTML = `<tr><td colspan="6" class="mini muted">— ไม่มีข้อมูล —</td></tr>`;
+    return;
+  }
+  tb.innerHTML = all.map(t=>`
+    <tr>
+      <td>${t.date||''}</td>
+      <td>${t.tooth||''}</td>
+      <td>${t.proc||''}</td>
+      <td>${t.dentist||''}</td>
+      <td>${t.note||''}</td>
+      <td style="text-align:right">${money(t.fee)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderAppt(pid){
+  const el = document.getElementById('aptBox');
+  if(!pid){ el.textContent='—'; return; }
+  const list = APPOINTMENTS.filter(a=>a.patientId===pid).sort((a,b)=> (a.date>b.date?1:-1));
+  el.innerHTML = list.length ? list.map(a=>`
+    <div>• ${a.date} ${a.time} — ${a.reason} (${a.dentist}, ${a.room})</div>
+  `).join('') : '— ไม่มีนัดหมาย —';
+}
+
+/* ======== Filter ======== */
+function filterPatients(){
+  const q = (document.getElementById('q').value||'').toLowerCase();
+  const filtered = PATIENTS.filter(p=>{
+    const hay = `${p.id} ${p.cid} ${humanName(p)}`.toLowerCase();
+    return hay.includes(q);
+  });
+  fillPatientSelect(filtered);
+  // คง selection เดิมถ้ายังอยู่ในผลลัพธ์
+  if(filtered.some(p=>p.id===currentPatientId)){
+    document.getElementById('patientSelect').value = currentPatientId;
+  }else{
+    selectPatient('');
+  }
+}
+function resetFilter(){
+  document.getElementById('q').value='';
+  fillPatientSelect(PATIENTS);
+  if(currentPatientId) document.getElementById('patientSelect').value = currentPatientId;
+}
+
+/* ======== Form ======== */
+function clearForm(){
+  ['f_date','f_tooth','f_fee','f_proc','f_note','f_dentist','f_next'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el.type==='date') el.value='';
+    else el.value='';
+  });
+  msg('');
+}
+function msg(text, ok=true){
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.style.color = ok ? '#0a6b34' : '#a32020';
+}
+
+function saveTreatment(evt){
+  evt.preventDefault();
+  if(!currentPatientId){ msg('กรุณาเลือกผู้ป่วยก่อนบันทึก', false); return false; }
+  const rec = {
+    patientId: currentPatientId,
+    date: document.getElementById('f_date').value,
+    tooth: document.getElementById('f_tooth').value.trim(),
+    fee: +document.getElementById('f_fee').value || 0,
+    proc: document.getElementById('f_proc').value.trim(),
+    note: document.getElementById('f_note').value.trim(),
+    dentist: document.getElementById('f_dentist').value.trim(),
+    next: document.getElementById('f_next').value
+  };
+  if(!rec.date || !rec.proc || !rec.dentist){
+    msg('กรอกข้อมูลให้ครบ (วันที่, รายการรักษา, ผู้รักษา)', false); return false;
+  }
+  const store = loadTreatments();
+  store.push(rec);
+  saveTreatments(store);
+  renderHistory(currentPatientId);
+  if(rec.next){
+    // เดโม: เพิ่มนัดหมายใหม่เข้า list
+    APPOINTMENTS.push({ patientId: currentPatientId, date:rec.next, time:'09:00', dentist:rec.dentist, room:'ห้อง 1', reason: rec.proc });
+    renderAppt(currentPatientId);
+  }
+  msg('บันทึกเรียบร้อย');
+  clearForm();
+  return false;
+}
+
+/* ======== Boot ======== */
+(function init(){
+  // set วันนี้ใน f_date
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('f_date').value = today;
+  fillPatientSelect(PATIENTS);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>จัดตารางว่าง | Dentalcare Clinic</title>
+  <link rel="stylesheet" href="styles2.css"/>
+  <style>
+    .grid-3{display:grid;gap:14px}
+    @media (min-width:900px){.grid-3{grid-template-columns:1fr 1fr 1fr}}
+    .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+    .slot{border:1px solid #e6edf5;background:#fff;border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center}
+    .slot small{color:#6b7d90}
+    .muted{color:#6b7d90}
+    .badge{padding:3px 8px;border-radius:999px;background:#e7f4ff;border:1px solid #d5ecff;color:#0e5b93;font-weight:700}
+    .danger{color:#a32020}
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+
+    /* time picker 24 ชั่วโมง */
+    .time24{display:flex;gap:8px;align-items:center}
+    .time24 select{padding:10px 12px;border:1px solid #e6edf5;border-radius:10px;background:#fff}
+    .btn{padding:8px 12px;border:1px solid #e6edf5;border-radius:10px;background:#fff;cursor:pointer;font-weight:600}
+    .btn:hover{background:#f6f8ff}
+  </style>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <div class="brand">
+      <div class="logo"><img src="logo.png" alt="Dentalcare Logo"></div>
+      <div>
+        <h1>จัดตารางว่างทันตแพทย์</h1>
+        <p class="sub">เพิ่ม/ลบช่องเวลา และทำซ้ำรายสัปดาห์ • 30 นาทีต่อช่อง</p>
+      </div>
+    </div>
+
+    <!-- ฟอร์มเพิ่มตาราง -->
+    <div class="card">
+      <h2 style="margin:0 0 6px">ตั้งตาราง</h2>
+      <form onsubmit="return addSlots(event)">
+        <div class="grid-3">
+          <label>คุณหมอ
+            <select id="dentist"></select>
+          </label>
+
+          <label>วันที่
+            <input type="date" id="date" required>
+          </label>
+
+          <label>ช่วงเวลา
+            <div class="row">
+              <!-- time picker 24 ชั่วโมง -->
+              <div class="time24" data-target="start"></div>
+              <span class="muted">ถึง</span>
+              <div class="time24" data-target="end"></div>
+            </div>
+            <div class="muted" style="font-size:12px">ระบบจะสร้างช่องทุก 30 นาที</div>
+          </label>
+        </div>
+
+        <!-- สร้างซ้ำรายสัปดาห์ -->
+        <label class="accept" style="margin-top:6px;">
+          <input type="checkbox" id="repeatWeekly">
+          <span>ทำซ้ำทุกสัปดาห์ จำนวน</span>
+          <input type="number" id="weeks" value="4" min="1" max="12" style="width:80px;margin-left:6px">
+          <span>สัปดาห์</span>
+        </label>
+
+        <!-- hidden inputs ให้โค้ดเดิมใช้งานต่อ -->
+        <input type="hidden" id="start" value="09:00">
+        <input type="hidden" id="end"   value="17:00">
+
+        <div class="actions" style="margin-top:10px;">
+          <a class="link" href="availability.html">ดูหน้าลูกค้า</a>
+          <button class="primary" type="submit">เพิ่มตาราง</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- รายการช่องในวันนั้น -->
+    <div class="card">
+      <div class="toolbar">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <label>ดูตารางของ
+            <select id="dentistView"></select>
+          </label>
+          <label>วันที่
+            <input type="date" id="dateView">
+          </label>
+        </div>
+        <div>
+          <input id="search" placeholder="ค้นหาเวลา (เช่น 09:)" oninput="render()">
+        </div>
+      </div>
+
+      <div id="summary" class="muted" style="margin-bottom:8px">—</div>
+      <div class="slots" id="slotBox"></div>
+      <div class="muted" style="margin-top:8px">*พื้นหลังขาว = ว่าง, ป้าย “จองแล้ว” = มีการจองจากลูกค้า</div>
+    </div>
+
+    <div class="card">
+      <a class="link" href="index.html">← กลับหน้าเมนู</a>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ======== Dentist list ======== */
+const DENTISTS = [
+  { id:'D001', name:'ทพ. ธนา' },
+  { id:'D002', name:'ทพญ. มนัสวี' }
+];
+
+/* ======== Storage keys ======== */
+const SLOTS_KEY = 'dc_slots_v1';      // { 'YYYY-MM-DD': { 'D001': ['09:00','09:30',...] } }
+const BOOK_KEY  = 'dc_bookings_v1';   // [{dentistId,date,time,name,phone}]
+
+function loadSlots(){ try{return JSON.parse(localStorage.getItem(SLOTS_KEY)||'{}')}catch{return{}} }
+function saveSlots(v){ localStorage.setItem(SLOTS_KEY,JSON.stringify(v)) }
+function loadBooks(){ try{return JSON.parse(localStorage.getItem(BOOK_KEY)||'[]')}catch{return[]} }
+
+/* ======== Menus ======== */
+function initMenus(){
+  ['dentist','dentistView'].forEach(id=>{
+    const el = document.getElementById(id);
+    el.innerHTML = DENTISTS.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  });
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('date').value = today;
+  document.getElementById('dateView').value = today;
+}
+
+/* ======== 24h Time Picker (hours 00-23, minutes step 30) ======== */
+function pad(n){ return String(n).padStart(2,'0'); }
+function mountTimePicker(container, targetId, minuteStep=30){
+  const hours   = Array.from({length:24}, (_,i)=>pad(i));
+  const minutes = Array.from({length:60/minuteStep}, (_,i)=>pad(i*minuteStep));
+
+  const hSel = document.createElement('select');
+  const mSel = document.createElement('select');
+  hSel.ariaLabel = 'ชั่วโมง (00-23)'; mSel.ariaLabel = 'นาที';
+  hours.forEach(h=>{ const o=document.createElement('option'); o.value=o.textContent=h; hSel.appendChild(o); });
+  minutes.forEach(m=>{ const o=document.createElement('option'); o.value=o.textContent=m; mSel.appendChild(o); });
+
+  // อ่านค่าเริ่มจาก hidden input
+  const hid = document.getElementById(targetId);
+  const def = (hid && hid.value && /^\d{2}:\d{2}$/.test(hid.value)) ? hid.value.split(':') : ['09','00'];
+  hSel.value = def[0]; mSel.value = def[1];
+
+  function sync(){
+    document.getElementById(targetId).value = `${hSel.value}:${mSel.value}`;
+  }
+  hSel.addEventListener('change', sync);
+  mSel.addEventListener('change', sync);
+  sync();
+
+  container.appendChild(hSel);
+  container.appendChild(document.createTextNode(':'));
+  container.appendChild(mSel);
+}
+
+/* ======== Helpers ======== */
+function humanDentist(id){ return (DENTISTS.find(d=>d.id===id)||{}).name || id; }
+function timeAdd(t, mins){
+  const [H,M] = t.split(':').map(Number);
+  const d = new Date(2000,0,1,H,M+mins,0);
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `${hh}:${mm}`;
+}
+function genSlots(from, to){
+  const out = [];
+  let cur = from;
+  while(cur < to){
+    out.push(cur);
+    cur = timeAdd(cur, 30);
+  }
+  return out;
+}
+function formatThaiTime(t){ return t + ' น.'; }
+
+/* ======== Add slots ======== */
+function addSlots(evt){
+  evt.preventDefault();
+  const dentistId = document.getElementById('dentist').value;
+  const date = document.getElementById('date').value;
+  const s = document.getElementById('start').value; // ได้ 'HH:mm'
+  const e = document.getElementById('end').value;   // ได้ 'HH:mm'
+  const repeat = document.getElementById('repeatWeekly').checked;
+  const weeks = Math.max(1, Math.min(12, +document.getElementById('weeks').value || 1));
+
+  if(!dentistId || !date || !s || !e || s>=e){
+    alert('กรอกข้อมูลให้ครบ และตรวจสอบช่วงเวลา'); return false;
+  }
+
+  let slots = loadSlots();
+
+  function addFor(day){
+    const list = genSlots(s,e);
+    slots[day] = slots[day] || {};
+    slots[day][dentistId] = Array.from(new Set([...(slots[day][dentistId]||[]), ...list])).sort();
+  }
+
+  addFor(date);
+  if(repeat){
+    const base = new Date(date);
+    for(let i=1;i<weeks;i++){
+      const d = new Date(base); d.setDate(d.getDate()+7*i);
+      addFor(d.toISOString().slice(0,10));
+    }
+  }
+
+  saveSlots(slots);
+  alert('เพิ่มตารางเรียบร้อย');
+  render();
+  return false;
+}
+
+/* ======== Render view ======== */
+function render(){
+  const dentistId = document.getElementById('dentistView').value;
+  const date = document.getElementById('dateView').value;
+  const search = (document.getElementById('search').value||'').toLowerCase();
+
+  const slots = loadSlots();
+  const day = slots[date] && slots[date][dentistId] ? slots[date][dentistId] : [];
+  const books = loadBooks().filter(b=>b.date===date && b.dentistId===dentistId);
+  const bookedTimes = new Set(books.map(b=>b.time));
+
+  const list = day
+    .filter(t => !search || t.toLowerCase().includes(search))
+    .map(t => ({ time:t, booked: bookedTimes.has(t), by: books.find(b=>b.time===t) }));
+
+  document.getElementById('summary').textContent =
+    `${humanDentist(dentistId)} • ${date} • ว่าง ${list.filter(x=>!x.booked).length} / ทั้งหมด ${day.length}`;
+
+  const box = document.getElementById('slotBox');
+  box.innerHTML = list.length
+    ? list.map(s=>`
+      <div class="slot">
+        <div>
+          <div><strong>${formatThaiTime(s.time)}</strong></div>
+          <small class="muted">${s.booked ? `จองแล้วโดย ${s.by.name}` : 'ว่าง'}</small>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${s.booked ? '' : `<button class="btn" onclick="removeSlot('${dentistId}','${date}','${s.time}')">ลบ</button>`}
+          ${s.booked ? `<span class="badge">จองแล้ว</span>` : ''}
+        </div>
+      </div>`).join('')
+    : `<div class="muted">— วันนี้ยังไม่มีการตั้งตาราง —</div>`;
+}
+
+/* ======== Remove slot ======== */
+function removeSlot(dentistId, date, time){
+  if(!confirm(`ลบช่องเวลา ${time} ?`)) return;
+  const slots = loadSlots();
+  const arr = (slots[date] && slots[date][dentistId]) || [];
+  const idx = arr.indexOf(time);
+  if(idx>=0){ arr.splice(idx,1); slots[date][dentistId]=arr; saveSlots(slots); }
+  render();
+}
+
+/* ======== Boot ======== */
+initMenus();
+document.querySelectorAll('.time24').forEach(box=>{
+  const id = box.getAttribute('data-target'); // 'start' หรือ 'end'
+  mountTimePicker(box, id, 30);
+});
+render();
+document.getElementById('dentistView').addEventListener('change', render);
+document.getElementById('dateView').addEventListener('change', render);
+</script>
+</body>
+</html>

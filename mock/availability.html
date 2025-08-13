@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>จองคิว | Dentalcare Clinic</title>
+  <link rel="stylesheet" href="styles2.css"/>
+  <style>
+    .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+    .slot{border:1px solid #e6edf5;background:#fff;border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center}
+    .slot small{color:#6b7d90}
+    .muted{color:#6b7d90}
+    .badge{padding:3px 8px;border-radius:999px;background:#e7f4ff;border:1px solid #d5ecff;color:#0e5b93;font-weight:700}
+    .card h3{margin:0 0 8px}
+    .brand .sub{margin-top:4px}
+  </style>
+</head>
+<body>
+<main>
+  <section class="wrap">
+    <div class="brand">
+      <div class="logo"><img src="logo.png" alt="Dentalcare Logo"></div>
+      <div>
+        <h1>จองคิวพบคุณหมอ</h1>
+        <p class="sub">เลือกวัน/คุณหมอ แล้วจองช่วงเวลาที่ว่าง</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <label>เลือกคุณหมอ
+            <select id="dentist"></select>
+          </label>
+          <label>เลือกวันที่
+            <input type="date" id="date">
+          </label>
+        </div>
+        <div>
+          <input id="search" placeholder="ค้นหาเวลา (เช่น 09:)" oninput="render()">
+        </div>
+      </div>
+
+      <div id="summary" class="muted" style="margin-bottom:8px">—</div>
+      <div class="slots" id="slotBox"></div>
+      <div class="muted" style="margin-top:8px">*ข้อมูลนี้เป็นเดโม — การจองจะบันทึกไว้เฉพาะในเครื่องของคุณ</div>
+    </div>
+
+    <div class="card">
+      <a class="link" href="dentist-schedule.html">→ หน้าจัดตารางสำหรับทันตแพทย์</a>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ======== Shared mock dentists (แก้ชื่อได้) ======== */
+const DENTISTS = [
+  { id:'D001', name:'ทพ. ธนา' },
+  { id:'D002', name:'ทพญ. มนัสวี' }
+];
+
+/* ======== Storage keys ======== */
+const SLOTS_KEY = 'dc_slots_v1';      // { 'YYYY-MM-DD': { 'D001': ['09:00','09:30',...] } }
+const BOOK_KEY  = 'dc_bookings_v1';   // [{dentistId,date,time,name,phone}]
+
+function loadSlots(){ try{return JSON.parse(localStorage.getItem(SLOTS_KEY)||'{}')}catch{return{}} }
+function saveSlots(v){ localStorage.setItem(SLOTS_KEY,JSON.stringify(v)) }
+function loadBooks(){ try{return JSON.parse(localStorage.getItem(BOOK_KEY)||'[]')}catch{return[]} }
+function saveBooks(v){ localStorage.setItem(BOOK_KEY,JSON.stringify(v)) }
+
+/* ======== UI init ======== */
+function initMenus(){
+  const sel = document.getElementById('dentist');
+  sel.innerHTML = DENTISTS.map(d=>`<option value="${d.id}">${d.name}</option>`).join('');
+  document.getElementById('date').value = new Date().toISOString().slice(0,10);
+}
+function humanDentist(id){ return (DENTISTS.find(d=>d.id===id)||{}).name || id; }
+
+/* ======== Render ======== */
+function render(){
+  const date = document.getElementById('date').value;
+  const dentistId = document.getElementById('dentist').value;
+  const search = (document.getElementById('search').value||'').toLowerCase();
+
+  const slots = loadSlots();
+  const day = slots[date] && slots[date][dentistId] ? slots[date][dentistId] : [];
+  const books = loadBooks().filter(b=>b.date===date && b.dentistId===dentistId);
+  const bookedTimes = new Set(books.map(b=>b.time));
+
+  const list = day
+    .filter(t => !search || t.toLowerCase().includes(search))
+    .map(t => ({ time:t, booked: bookedTimes.has(t), by: books.find(b=>b.time===t) }));
+
+  document.getElementById('summary').textContent =
+    `${humanDentist(dentistId)} • ${date} • ช่องว่าง ${list.filter(x=>!x.booked).length} / ทั้งหมด ${day.length}`;
+
+  const box = document.getElementById('slotBox');
+  box.innerHTML = list.length
+    ? list.map(s=>`
+      <div class="slot">
+        <div>
+          <div><strong>${s.time}</strong></div>
+          <small class="muted">${s.booked ? `จองแล้วโดย ${s.by.name}` : 'ว่าง'}</small>
+        </div>
+        <div>
+          ${s.booked
+            ? `<span class="badge">จองแล้ว</span>`
+            : `<button class="primary" style="padding:8px 12px" onclick="book('${dentistId}','${date}','${s.time}')">จอง</button>`
+          }
+        </div>
+      </div>`).join('')
+    : `<div class="muted">— วันนี้ยังไม่มีการตั้งตารางหรือไม่พบช่วงเวลาที่ตรงเงื่อนไข —</div>`;
+}
+
+/* ======== Booking ======== */
+function book(dentistId, date, time){
+  const name = prompt('ชื่อ-นามสกุลผู้จอง:');
+  if(!name) return;
+  const phone = prompt('เบอร์โทร:');
+  const list = loadBooks();
+  if(list.some(b=>b.dentistId===dentistId && b.date===date && b.time===time)){
+    alert('ช่วงเวลานี้ถูกจองไปแล้ว'); render(); return;
+  }
+  list.push({ dentistId, date, time, name, phone });
+  saveBooks(list);
+  alert('จองสำเร็จ');
+  render();
+}
+
+/* ======== Boot ======== */
+initMenus();
+render();
+// หากยังไม่มี slot ในระบบเลย ให้แจ้งเตือนให้หมอไปตั้งในหน้า dentist-schedule.html
+(function checkEmpty(){
+  const s = loadSlots();
+  const hasAny = Object.values(s).some(day => Object.values(day).some(arr => (arr||[]).length>0));
+  if(!hasAny) {
+    document.getElementById('summary').innerHTML = 'ยังไม่มีตารางว่าง กรุณาให้ทันตแพทย์ตั้งตารางก่อนที่ <a class="link" href="dentist-schedule.html">หน้าจัดตาราง</a>';
+  }
+})();
+document.getElementById('dentist').addEventListener('change', render);
+document.getElementById('date').addEventListener('change', render);
+</script>
+</body>
+</html>
