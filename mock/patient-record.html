@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>เวชระเบียนผู้ป่วย | Dentalcare Clinic</title>
+
+  <!-- ใช้สไตล์หลักจากโปรเจ็กต์ (ถ้ามี) หรือเอา CSS ในหน้านี้พอ -->
+  <!-- <link rel="stylesheet" href="styles.css"/> -->
+
+  <style>
+    :root{
+      --blue-700:#0f75b8;--blue-600:#1286d1;--blue-100:#e8f4fd;--ink:#143049;--muted:#5a6e84;
+      --ring:#1a96e033;--shadow:0 10px 35px rgba(14,60,98,.12);--radius:18px;
+    }
+    *{box-sizing:border-box} body{margin:0;font-family:ui-sans-serif,system-ui,Segoe UI,Inter,Arial;color:var(--ink);
+      background:radial-gradient(1200px 800px at 8% -10%, #f4faff, transparent 60%),linear-gradient(180deg,#fff,#f6fbff)}
+    main{min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:24px}
+    .wrap{width:min(1100px,94vw);display:grid;gap:16px}
+    .brand{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid #e6edf5;padding:14px 16px;border-radius:16px;box-shadow:var(--shadow)}
+    .logo{width:56px;height:56px;border-radius:14px;background:#fff;border:1px solid #e6edf5;display:grid;place-items:center;overflow:hidden}
+    .logo img{width:100%;height:100%;object-fit:contain;display:block}
+    .brand h1{margin:0;color:var(--blue-700)} .brand .sub{margin:2px 0 0;color:var(--muted)}
+    .card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);padding:clamp(16px,3vw,24px);border:1px solid #e6edf5}
+    .grid{display:grid;gap:12px} .grid-2{display:grid;gap:12px} @media(min-width:780px){.grid-2{grid-template-columns:1fr 1fr}}
+    .grid-3{display:grid;gap:12px} @media(min-width:900px){.grid-3{grid-template-columns:1.2fr 1fr 1fr}}
+    label{display:block;font-size:14px;color:var(--ink)} input,select,textarea{width:100%;padding:10px 12px;border:1px solid #dbe8f4;border-radius:12px;background:#fbfdff;outline:none}
+    input:focus,select:focus,textarea:focus{background:#fff;border-color:var(--blue-600);box-shadow:0 0 0 5px var(--ring)}
+    .muted{color:var(--muted)} .badge{padding:4px 8px;border-radius:999px;background:#e7f4ff;border:1px solid #d5ecff;color:#0e5b93;font-weight:700}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap} .between{justify-content:space-between}
+    .table{width:100%;border-collapse:separate;border-spacing:0 8px} th,td{padding:10px 8px;text-align:left}
+    tr.card-row{background:#f7fbff;border:1px solid #e6edf5}
+    .primary{padding:10px 14px;border:0;border-radius:12px;color:#fff;background:linear-gradient(90deg,var(--blue-600),var(--blue-700));font-weight:700}
+    .btn{padding:8px 12px;border:1px solid #e6edf5;border-radius:10px;background:#fff;cursor:pointer;font-weight:600}
+    .btn:hover{background:#f6f8ff} .link{color:var(--blue-700);text-decoration:none;font-weight:700}
+    .k{font-size:12px;color:var(--muted)} .v{font-weight:700}
+    .note{font-size:12px;color:#6a7f96}
+  </style>
+</head>
+<body>
+<main>
+  <section class="wrap">
+
+    <!-- Header -->
+    <div class="brand">
+      <div class="logo"><img src="logo.png" alt="Dentalcare Logo"></div>
+      <div>
+        <h1>เวชระเบียนผู้ป่วย</h1>
+        <p class="sub">Dentalcare Clinic — ดูประวัติผู้ป่วยและการรักษาย้อนหลัง</p>
+      </div>
+    </div>
+
+    <!-- เลือกผู้ป่วย -->
+    <div class="card">
+      <div class="row between" style="margin-bottom:8px">
+        <h2 style="margin:0">เลือกผู้ป่วย</h2>
+        <div class="row">
+          <input id="q" placeholder="ค้นหา ชื่อ/รหัส/เลขบัตร" oninput="filterPatients()">
+          <button class="btn" onclick="resetFilter()">รีเซ็ต</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <label>รายการผู้ป่วย
+          <select id="patientSelect" onchange="selectPatient(this.value)"></select>
+        </label>
+        <div>
+          <label>ข้อมูลย่อ</label>
+          <div id="brief" class="note">เลือกผู้ป่วยเพื่อแสดงรายละเอียด</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ข้อมูลผู้ป่วย + นัดหมาย -->
+    <div class="card">
+      <div class="grid-3">
+        <div>
+          <h3 style="margin:0 0 6px">ข้อมูลผู้ป่วย</h3>
+          <div class="grid" style="grid-template-columns:1fr 1fr">
+            <div><div class="k">รหัส</div><div id="pid" class="v">—</div></div>
+            <div><div class="k">เลขบัตร</div><div id="cid" class="v">—</div></div>
+            <div><div class="k">ชื่อ-นามสกุล</div><div id="name" class="v">—</div></div>
+            <div><div class="k">เพศ</div><div id="gender" class="v">—</div></div>
+            <div><div class="k">วันเกิด</div><div id="dob" class="v">—</div></div>
+            <div><div class="k">เบอร์โทร</div><div id="phone" class="v">—</div></div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <span class="badge">ประวัติการแพ้ยา</span>
+            <span id="allergy" class="v" style="color:#a32020">—</span>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="margin:0 0 6px">ประวัติทางการแพทย์</h3>
+          <div id="med" class="note">—</div>
+          <div style="margin-top:8px">
+            <label>บันทึกย่อ (เก็บในเครื่อง)</label>
+            <textarea id="note" rows="3" placeholder="เช่น เบาหวาน ควบคุมด้วยยา..."></textarea>
+            <div class="row" style="margin-top:6px">
+              <button class="btn" onclick="saveNote()">บันทึกย่อ</button>
+              <span id="noteMsg" class="note"></span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 style="margin:0 0 6px">นัดหมายถัดไป</h3>
+          <div id="next" class="note">—</div>
+          <div style="margin-top:8px">
+            <button class="btn" onclick="window.print()">พิมพ์เวชระเบียน</button>
+            <button class="btn" onclick="exportCSV()">Export CSV</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ประวัติการรักษาย้อนหลัง -->
+    <div class="card">
+      <div class="row between" style="margin-bottom:6px">
+        <h2 style="margin:0">ประวัติการรักษา</h2>
+        <div class="row">
+          <input id="textFilter" placeholder="กรองคำ (เช่น อุดฟัน/ห้อง/หมอ)" oninput="renderHistory()">
+        </div>
+      </div>
+      <div style="overflow:auto;max-height:420px">
+        <table class="table" style="border-spacing:0">
+          <thead>
+            <tr>
+              <th>วันที่</th>
+              <th>เวลา</th>
+              <th>รายการรักษา</th>
+              <th>ซี่</th>
+              <th>ผู้รักษา</th>
+              <th>ห้อง</th>
+              <th style="text-align:right">ค่ารักษา</th>
+              <th>หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody id="histBody">
+            <tr><td colspan="8" class="note">— ไม่มีข้อมูล —</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <a class="link" href="index.html">← กลับหน้าเมนู</a>
+    </div>
+
+  </section>
+</main>
+
+<script>
+/* ================= Mock Data ================= */
+const PATIENTS = [
+  { id:'PT001', cid:'1101700234567', titleName:'นาย', firstName:'ชนกชนม์', lastName:'แผ่นคำ',
+    gender:'ชาย', dob:'1995-02-14', phone:'081-234-5678', allergy:'แพ้เพนิซิลลิน', med:'เบาหวานชนิดที่ 2 ควบคุมด้วยยา' },
+  { id:'PT002', cid:'1719900123456', titleName:'นางสาว', firstName:'พัทธ์ธีรา', lastName:'บุตรธรรม',
+    gender:'หญิง', dob:'2000-10-01', phone:'089-111-2222', allergy:'-', med:'—' }
+];
+
+const HISTORY = [
+  { patientId:'PT001', date:'2025-08-10', time:'09:30', proc:'อุดฟันเรซิน', tooth:'14', dentist:'ทพ. ธนา', room:'ห้อง 2', fee:1200, note:'ยาชา 1 carpule' },
+  { patientId:'PT001', date:'2025-08-01', time:'10:00', proc:'ขูดหินปูน', tooth:'-', dentist:'ทพญ. มนัสวี', room:'ห้อง 1', fee:900, note:'' },
+  { patientId:'PT002', date:'2025-08-05', time:'13:00', proc:'เอ็กซเรย์พาโน', tooth:'-', dentist:'ทพญ. มนัสวี', room:'ห้อง 3', fee:500, note:'' },
+];
+
+const APPOINTMENTS = [
+  { patientId:'PT001', date:'2025-08-20', time:'09:00', dentist:'ทพ. ธนา', room:'ห้อง 2', reason:'ติดตามผลอุดฟัน' },
+  { patientId:'PT002', date:'2025-08-18', time:'11:30', dentist:'ทพญ. มนัสวี', room:'ห้อง 1', reason:'ตรวจสุขภาพช่องปาก' },
+];
+
+// เก็บบันทึกย่อในเครื่อง (ต่อ patientId)
+const NOTE_KEY = 'dc_patient_notes_v1';
+function loadNotes(){ try{return JSON.parse(localStorage.getItem(NOTE_KEY)||'{}')}catch{return{}} }
+function saveNotes(v){ localStorage.setItem(NOTE_KEY, JSON.stringify(v)); }
+
+/* ================= Helpers ================= */
+function fullName(p){ return `${p.titleName}${p.firstName} ${p.lastName}`; }
+function money(n){ return (+n||0).toLocaleString(); }
+function thaiTime(t){ return t + ' น.'; }
+
+/* ================= UI ================= */
+let currentPatientId = null;
+
+function fillPatientSelect(list){
+  const el = document.getElementById('patientSelect');
+  el.innerHTML = '<option value="">— เลือกผู้ป่วย —</option>' + list.map(p =>
+    `<option value="${p.id}">${p.id} · ${fullName(p)}</option>`
+  ).join('');
+}
+
+function filterPatients(){
+  const q = (document.getElementById('q').value||'').toLowerCase();
+  const filtered = PATIENTS.filter(p=>{
+    const hay = `${p.id} ${p.cid} ${fullName(p)}`.toLowerCase();
+    return hay.includes(q);
+  });
+  fillPatientSelect(filtered);
+  if(filtered.some(p=>p.id===currentPatientId)){
+    document.getElementById('patientSelect').value = currentPatientId;
+  }else{
+    selectPatient('');
+  }
+}
+
+function resetFilter(){
+  document.getElementById('q').value='';
+  fillPatientSelect(PATIENTS);
+  if(currentPatientId) document.getElementById('patientSelect').value = currentPatientId;
+}
+
+function selectPatient(pid){
+  currentPatientId = pid || null;
+  const p = PATIENTS.find(x=>x.id===pid);
+  // header brief
+  document.getElementById('brief').textContent = p ? `${fullName(p)} · เพศ ${p.gender} · เกิด ${p.dob} · โทร ${p.phone}` : 'เลือกผู้ป่วยเพื่อแสดงรายละเอียด';
+  // info
+  document.getElementById('pid').textContent = p ? p.id : '—';
+  document.getElementById('cid').textContent = p ? p.cid : '—';
+  document.getElementById('name').textContent = p ? fullName(p) : '—';
+  document.getElementById('gender').textContent = p ? p.gender : '—';
+  document.getElementById('dob').textContent = p ? p.dob : '—';
+  document.getElementById('phone').textContent = p ? p.phone : '—';
+  document.getElementById('allergy').textContent = p ? (p.allergy||'—') : '—';
+  document.getElementById('med').textContent = p ? (p.med||'—') : '—';
+
+  // note (localStorage)
+  const notes = loadNotes();
+  document.getElementById('note').value = (notes[pid]||'');
+  document.getElementById('noteMsg').textContent = '';
+
+  // next appointment
+  const next = APPOINTMENTS
+    .filter(a=>a.patientId===pid)
+    .sort((a,b)=> (a.date+b.time) > (b.date+a.time) ? 1 : -1)[0];
+  document.getElementById('next').innerHTML = next
+    ? `${next.date} ${thaiTime(next.time)} • ${next.reason} (${next.dentist}, ${next.room})`
+    : '— ไม่มีนัดหมาย —';
+
+  renderHistory();
+}
+
+function renderHistory(){
+  const tb = document.getElementById('histBody');
+  const tf = (document.getElementById('textFilter').value||'').toLowerCase();
+
+  const items = HISTORY
+    .filter(h=>h.patientId===currentPatientId)
+    .filter(h=>{
+      if(!tf) return true;
+      const hay = `${h.proc} ${h.tooth} ${h.dentist} ${h.room} ${h.note}`.toLowerCase();
+      return hay.includes(tf);
+    })
+    .sort((a,b)=> (a.date+a.time) < (b.date+b.time) ? 1 : -1);
+
+  tb.innerHTML = items.length ? items.map(h=>`
+    <tr class="card-row">
+      <td>${h.date}</td>
+      <td>${thaiTime(h.time)}</td>
+      <td>${h.proc}</td>
+      <td>${h.tooth}</td>
+      <td>${h.dentist}</td>
+      <td>${h.room}</td>
+      <td style="text-align:right">${money(h.fee)}</td>
+      <td>${h.note||''}</td>
+    </tr>
+  `).join('') : `<tr><td colspan="8" class="note">— ไม่มีข้อมูล —</td></tr>`;
+}
+
+function saveNote(){
+  if(!currentPatientId){ document.getElementById('noteMsg').textContent='เลือกผู้ป่วยก่อน'; return; }
+  const notes = loadNotes();
+  notes[currentPatientId] = document.getElementById('note').value.trim();
+  saveNotes(notes);
+  document.getElementById('noteMsg').textContent='บันทึกแล้ว';
+  setTimeout(()=>document.getElementById('noteMsg').textContent='',1500);
+}
+
+function exportCSV(){
+  if(!currentPatientId){ alert('กรุณาเลือกผู้ป่วย'); return; }
+  const p = PATIENTS.find(x=>x.id===currentPatientId);
+  const items = HISTORY.filter(h=>h.patientId===currentPatientId);
+  const rows = [
+    ['PatientID','Name','CID','Gender','DOB','Phone','Allergy'],
+    [p.id, fullName(p), p.cid, p.gender, p.dob, p.phone, p.allergy||'-'],
+    [],
+    ['Date','Time','Procedure','Tooth','Dentist','Room','Fee','Note']
+  ];
+  items.forEach(h=> rows.push([h.date, h.time, h.proc, h.tooth, h.dentist, h.room, h.fee, h.note||'']));
+  const csv = rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `patient_${currentPatientId}_record.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ================= Boot ================= */
+(function init(){
+  fillPatientSelect(PATIENTS);
+})();
+</script>
+
+</body>
+</html>
