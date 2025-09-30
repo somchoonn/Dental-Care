@@ -10,8 +10,7 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => res.redirect('/login'));
-const session = require('express-session');
-
+const jwt = require('jsonwebtoken');
 // DB
 let db = new sqlite3.Database('Dentalcare.db', (err) => {
   if (err) {
@@ -28,27 +27,27 @@ let db = new sqlite3.Database('Dentalcare.db', (err) => {
   }
 });
 
-// Session configuration
-app.use(session({
-  secret: 'change-this-secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 }
-}));
-function requireAuth(req, res, next) {
-  if (!req.session.user) {
-    return res.redirect('/login');
-  }
-  next();
-}
 
+// JWT Middleware
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
+function authenticateToken(req, res, next) {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1] || req.cookies.token;
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, 'secret-key', (err, user) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
+  });
+}
 function allowRoles(...roles) {
   return (req, res, next) => {
-    const user = req.session.user;
-    if (!user) return res.redirect('/login');
-    if (!roles.includes(user.role)) {
-      // ไม่อนุญาต
-      return res.status(403).send('Forbidden: insufficient role');
+    if (!req.user) return res.status(401).send('Unauthorized');
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).send('Access denied');
     }
     next();
   };
@@ -77,36 +76,31 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', (req, res) => {
-  let { citizen_id, password } = req.body;
-  citizen_id = (citizen_id || '').trim();
-  password = (password || '').trim();
+  const { citizen_id, password } = req.body;
+  db.get("SELECT * FROM users WHERE citizen_id = ? AND password = ? LIMIT 1",
+    [citizen_id, password],
+    (err, row) => {
+      if (!row) {
+        return res.render('login', { title: 'เข้าสู่ระบบ', message: 'ไม่ถูกต้อง' });
+      }
 
-  const sql = `SELECT * FROM users WHERE citizen_id = ? AND password = ? LIMIT 1`;
-  db.get(sql, [citizen_id, password], (err, row) => {
-    if (err) {
-      console.error(err.message);
-      return res.status(500).json({ error: 'เกิดข้อผิดพลาดในการตรวจสอบข้อมูล' });
-    }
+      // Create JWT
+      const token = jwt.sign(
+        { id: row.id, citizen_id: row.citizen_id, role: row.role },
+        'secret-key',
+        { expiresIn: '1h' }
+      );
 
-    if (!row) {
-      return res.render('login', {
-        title: 'เข้าสู่ระบบ | Dentalcare Clinic',
-        message: 'บัตรประชาชนหรือรหัสผ่านไม่ถูกต้อง',
-        values: { citizen_id }
+      // Route
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: false,        // ถ้าใช้ HTTPS ให้เปลี่ยนเป็น true
+        maxAge: 1000 * 60 * 60
       });
+      res.redirect(`/${row.role}`); // redirect ไปหน้าของ role เลย
+
     }
-
-    // ตั้ง session
-    req.session.user = { id: row.id, citizen_id: row.citizen_id, role: row.role };
-
-    // Redirect role
-    if (row.role === 'staff') return res.redirect('/staff');
-    if (row.role === 'dentist') return res.redirect('/dentist');
-    if (row.role === 'patient') return res.redirect('/patient');
-
-    // ถ้า role แปลก ๆ
-    return res.status(403).send('Role not allowed');
-  });
+  );
 });
 
 // REGISTER
@@ -119,7 +113,7 @@ app.get('/register', (req, res) => {
 app.post('/register', (req, res) => {
   // const { citizen_id, password } = req.body;
   const { citizen_id, password, prefix, fname, lname, gender, dob, phone, email, race, nationality, religion, allergy } = req.body;
- const allergyVal = (allergy && allergy.trim() !== '') ? allergy : 'ไม่มี';
+  const allergyVal = (allergy && allergy.trim() !== '') ? allergy : 'ไม่มี';
   const sql1 = `
     INSERT INTO users (citizen_id, password, role)
     VALUES (?, ?, 'patient')
@@ -166,9 +160,19 @@ WHERE citizen_id = ?;
     });
   });
 });
+// Authenticated Test Routes
+app.get('/staff', authenticateToken,allowRoles('staff'), (req, res) => {
+  res.render('staff');
+});
 
+app.get('/dentist', authenticateToken,allowRoles('dentist'), (req, res) => {
 
+  res.render('dentist');
+});
+app.get('/patient', authenticateToken,allowRoles('patient'), (req, res) => {
 
+  res.render('patient');
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`DentalCare running at http://localhost:${PORT}`);
