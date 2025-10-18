@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>เวชระเบียนผู้ป่วย | Dentalcare Clinic</title>
+  <link rel="stylesheet" href="/patientRecStyles.css">
+</head>
+
+<body>
+<main class="container">
+
+  <div class="header">
+    <img src="logo.png" alt="Dentalcare Logo" class="logo">
+    <div>
+      <h1 class="header-title">เวชระเบียนผู้ป่วย</h1>
+      <p class="header-subtitle">Dentalcare Clinic — ดูประวัติผู้ป่วยและการรักษาย้อนหลัง</p>
+    </div>
+  </div>
+
+  <div class="card">
+      <h2 class="card-title">เลือกผู้ป่วย</h2>
+      <form action="" method="GET" id="patient-select-form" class="form-row">
+          <div class="form-flex-grow">
+              <label for="patient-select" class="form-label">รายชื่อผู้ป่วย</label>
+              <select id="patient-select" name="patientId" class="form-select">
+                  <option value="">— กรุณาเลือกผู้ป่วย —</option>
+                  <% if (allPatients && allPatients.length > 0) { %>
+                      <% allPatients.forEach(p => { %>
+                          <option value="<%= p.id %>" <%= (patient && patient.id === p.id) ? 'selected' : '' %>>
+                              PT<%= String(p.id).padStart(3, '0') %> - <%= p.pre_name %><%= p.first_name %> <%= p.last_name %>
+                          </option>
+                      <% }) %>
+                  <% } %>
+              </select>
+          </div>
+          <button type="submit" class="btn btn-primary">
+              ค้นหา
+          </button>
+      </form>
+  </div>
+
+  <script>
+      const patientSelectForm = document.getElementById('patient-select-form');
+      const patientSelect = document.getElementById('patient-select');
+
+      patientSelectForm.addEventListener('submit', function(event) {
+          event.preventDefault(); 
+          const selectedPatientId = patientSelect.value;
+          if (selectedPatientId) {
+              window.location.href = `/patientRecord/${selectedPatientId}`;
+          }
+      });
+  </script>
+
+  <% if (patient) { %>
+  <div class="card">
+    <h2 class="card-title">ข้อมูลผู้ป่วย</h2>
+    <div class="grid grid-cols-1 grid-cols-2">
+      <p class="info-item"><span class="info-label">รหัสผู้ป่วย:</span> PT<%= String(patient.id).padStart(3, '0') %></p>
+      <p class="info-item"><span class="info-label">เลขบัตรประชาชน:</span> <%= patient.citizen_id %></p>
+      <p class="info-item"><span class="info-label">ชื่อ-นามสกุล:</span> <%= patient.pre_name %><%= patient.first_name %> <%= patient.last_name %></p>
+      <p class="info-item"><span class="info-label">เพศ:</span> <%= patient.gender %></p>
+      <p class="info-item"><span class="info-label">วันเกิด:</span> <%= new Date(patient.birth_date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+      <p class="info-item"><span class="info-label">เบอร์โทร:</span> <%= patient.phone %></p>
+      <p class="info-item"><span class="info-label">อีเมล:</span> <%= patient.email || '-' %></p>
+      <p class="info-item"><span class="info-label">สัญชาติ:</span> <%= patient.nationality %></p>
+      <p class="info-item"><span class="info-label">เชื้อชาติ:</span> <%= patient.race %></p>
+      <p class="info-item"><span class="info-label">ศาสนา:</span> <%= patient.religion %></p>
+      <p class="info-item"><span class="allergy">ประวัติการแพ้ยา:</span> <%= patient.drug_allergy %></p>
+    </div>
+  </div>
+  <% } else { %>
+    <div class="empty-state">
+        <p class="empty-text">กรุณาเลือกผู้ป่วยจากเมนูด้านบนเพื่อดูข้อมูล</p>
+    </div>
+  <% } %>
+
+  <div class="card">
+      <h2 class="card-title">ประวัติทางการแพทย์</h2>
+      
+      <% if (medicalRecord) { %>
+          <div class="record-note">
+              <p class="record-meta">บันทึกล่าสุดเมื่อ <%= new Date(medicalRecord.record_date).toLocaleString('th-TH') %> โดย <%= medicalRecord.doctor_name %></p>
+              <p class="record-content"><%= medicalRecord.note %></p>
+          </div>
+      <% } else if (patient) { %>
+          <p class="gray-text mb-4">— ยังไม่มีการบันทึกประวัติ —</p>
+      <% } %>
+      
+      <% if (patient) { %>
+          <form action="/patientRecord/medical-record" method="POST">
+              <input type="hidden" name="patient_id" value="<%= patient.id %>">
+              
+              <div class="mb-3">
+                  <label for="note" class="form-label">บันทึกย่อ (เพิ่มใหม่)</label>
+                  <textarea name="note" id="note" class="form-textarea" placeholder="เช่น: มีอาการปวดฟันซี่ที่ 36, แพ้ Amoxicillin..." required></textarea>
+              </div>
+              <div class="mb-3">
+                  <label for="doctor_name" class="form-label">ผู้บันทึก (ชื่อแพทย์)</label>
+                  <input type="text" name="doctor_name" id="doctor_name" class="form-input form-half" placeholder="เช่น: ทพญ.สมใจ รักดี" required>
+              </div>
+              
+              <button type="submit" class="btn btn-success">
+                  บันทึก
+              </button>
+          </form>
+      <% } else { %>
+          <p class="text-center gray-text">— กรุณาเลือกผู้ป่วยก่อนเพื่อทำการบันทึก —</p>
+      <% } %>
+  </div>
+
+  <div class="card">
+    <h2 class="card-title">นัดหมายถัดไป</h2>
+    <% if (appointment) { %>
+      <p class="info-item"><strong>วันที่:</strong> <%= appointment.appointment_date %></p>
+      <p class="info-item"><strong>ทันตแพทย์:</strong> <%= appointment.doctor_name %></p>
+      <p class="info-item"><strong>ห้องตรวจ:</strong> <%= appointment.room %></p>
+      <p class="info-item"><strong>เหตุผล:</strong> <%= appointment.purpose %></p>
+      <p class="info-item"><strong>สถานะ:</strong> <%= appointment.status %></p>
+    <% } else { %>
+      <p class="gray-text">— ไม่มีนัดหมาย —</p>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <div class="table-container">
+      <h2 class="card-title">ประวัติการรักษา</h2>
+      <% if (patient && treatments.length > 0) { %>
+        <table class="table">
+          <thead>
+            <tr>
+              <th>วันที่</th>
+              <th>เวลา</th>
+              <th>รายการรักษา</th>
+              <th>ซี่</th>
+              <th>ผู้รักษา</th>
+              <th>ห้อง</th>
+              <th class="text-right">ค่ารักษา (บาท)</th>
+              <th>หมายเหตุ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% treatments.forEach(t => { %>
+              <tr>
+                <td><%= new Date(t.treatment_date).toLocaleDateString('th-TH') %></td>
+                <td><%= t.treatment_time || '-' %></td>
+                <td><%= t.treatment_name %></td>
+                <td><%= t.tooth_number || '-' %></td>
+                <td><%= t.doctor_name %></td>
+                <td><%= t.room %></td>
+                <td class="text-right"><%= t.cost ? t.cost.toLocaleString('th-TH') : '-' %></td>
+                <td><%= t.remark || '' %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      <% } else { %>
+        <p class="gray-text">— ไม่มีข้อมูลการรักษา —</p>
+      <% } %>
+    </div>
+  </div>
+
+  <div class="text-center">
+    <a href="/" class="back-link">← กลับหน้าเมนูหลัก</a>
+  </div>
+
+</main>
+</body>
+</html>

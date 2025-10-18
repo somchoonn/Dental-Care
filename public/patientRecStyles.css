@@ -1,0 +1,257 @@
+/* Reset และ Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(to bottom, #f0f9ff, #ffffff);
+  min-height: 100vh;
+  color: #0c4a6e;
+}
+
+/* Layout */
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  background-color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.25rem;
+  border-radius: 1rem;
+}
+
+.logo {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e0f2fe;
+}
+
+.header-title {
+  font-size: 1.875rem;
+  font-weight: bold;
+  color: #0369a1;
+}
+
+.header-subtitle {
+  color: #0ea5e9;
+}
+
+/* Cards */
+.card {
+  background-color: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #0369a1;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 0.25rem;
+}
+
+.form-select, 
+.form-input, 
+.form-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-select:focus, 
+.form-input:focus, 
+.form-textarea:focus {
+  outline: none;
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 6rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-block;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: #0284c7;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0369a1;
+}
+
+.btn-success {
+  background-color: #16a34a;
+  color: white;
+}
+
+.btn-success:hover {
+  background-color: #15803d;
+}
+
+/* Grid Layout */
+.grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Patient Info */
+.info-item {
+  margin-bottom: 0.5rem;
+}
+
+.info-label {
+  font-weight: 600;
+}
+
+.allergy {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+/* Medical Record */
+.record-note {
+  background-color: #f9fafb;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e5e7eb;
+}
+
+.record-meta {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.record-content {
+  color: #1f2937;
+  margin-top: 0.25rem;
+}
+
+/* Table */
+.table-container {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  font-size: 0.875rem;
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.table th {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  padding: 0.5rem 0.75rem;
+}
+
+.table td {
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.table tr:hover {
+  background-color: #f0f9ff;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  background-color: #f0f9ff;
+  border-radius: 1rem;
+  border: 1px solid #e0f2fe;
+}
+
+.empty-text {
+  color: #0ea5e9;
+  font-size: 1.125rem;
+}
+
+/* Link */
+.back-link {
+  color: #0ea5e9;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+  .grid-cols-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  
+  .form-half {
+    width: 50%;
+  }
+  
+  .flex-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 1rem;
+  }
+  
+  .flex-grow {
+    flex-grow: 1;
+  }
+}

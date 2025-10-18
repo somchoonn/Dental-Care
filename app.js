@@ -16,8 +16,10 @@ app.use('/', require('./routes/auth'));
 app.use('/staff', require('./routes/staff'));
 app.use('/dentist', require('./routes/dentist'));
 app.use('/patient', require('./routes/patient'));
+app.use('/patientRecord', require('./routes/patientRecord'));
 
 app.get('/', (req, res) => res.redirect('/login'));
+app.get('/patientRecord', (req, res) => res.render())
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`DentalCare running at http://localhost:${PORT}`));
